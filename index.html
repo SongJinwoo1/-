@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حلول هادئة | Calm Solutions</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================
+           الأساسيات والمشتركات (Global)
+           ========================================== */
+        :root {
+            --primary-blue: #0056b3;
+            --light-bg: #f4f7f6;
+            --dark-bg: #0f172a;
+            --text-main: #333;
+            --white: #fff;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Tajawal', sans-serif; transition: background-color 0.4s ease; overflow-x: hidden; }
+        .hidden { display: none !important; }
+
+        /* ==========================================
+           النسخة العادية (Standard Edition)
+           ========================================== */
+        #standard-app {
+            background-color: var(--light-bg);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+        .std-header {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+        .std-form-container {
+            max-width: 600px;
+            margin: -2rem auto 2rem auto;
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .std-input {
+            width: 100%; padding: 10px; margin-bottom: 15px;
+            border: 1px solid #ccc; border-radius: 5px; font-family: inherit;
+        }
+        .std-btn {
+            width: 100%; padding: 12px; background: var(--primary-blue);
+            color: var(--white); border: none; border-radius: 5px;
+            font-size: 1.1rem; cursor: pointer;
+        }
+
+        /* ==========================================
+           النسخة الاحترافية (Premium Edition)
+           ========================================== */
+        #premium-app {
+            background-color: var(--dark-bg);
+            color: var(--white);
+            min-height: 100vh;
+            position: relative;
+        }
+        /* خلفية الفيديو (محاكاة بصورة متحركة لسرعة التحميل) */
+        .premium-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: -1; opacity: 0.2;
+        }
+        .glass-panel {
+            max-width: 800px; margin: 5vh auto; padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .glass-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;
+        }
+        /* منطقة البوت التي سنبرمجها في المستوى الثاني */
+        #ai-bot-container {
+            background: rgba(0,0,0,0.2); border-radius: 10px;
+            min-height: 300px; padding: 1rem; display: flex; flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="standard-app" class="hidden">
+        <header class="std-header">
+            <h1>حلول هادئة</h1>
+            <p>الرعاية الطبية الكلاسيكية</p>
+        </header>
+        <div class="std-form-container">
+            <h3>احجز موعدك الآن</h3><br>
+            <form id="std-form">
+                <input type="text" class="std-input" placeholder="الاسم الكريم" required>
+                <input type="tel" class="std-input" placeholder="رقم الهاتف" required>
+                <button type="button" class="std-btn" onclick="alert('تم الحجز بالنسخة العادية!')">إرسال الطلب</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="premium-app" class="hidden">
+        <video class="premium-bg" autoplay loop muted playsinline>
+            <source src="https://cdn.pixabay.com/video/2020/05/25/40131-424811910_large.mp4" type="video/mp4">
+        </video>
+        
+        <div class="glass-panel">
+            <div class="glass-header">
+                <h2>✨ حلول هادئة Elite</h2>
+                <button style="padding: 5px 15px; border-radius: 20px; background: transparent; color: white; border: 1px solid white; cursor: pointer;">بوابة الإدارة 🔒</button>
+            </div>
+            
+            <p id="welcome-msg" style="margin-bottom: 15px;">جاري تشغيل الذكاء الاصطناعي...</p>
+            
+            <div id="ai-bot-container">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // المتغير المحوري: غيره لـ false لترى النسخة العادية!
+        const is_premium = true;
+
+        // تعريف العناصر
+        const standardApp = document.getElementById('standard-app');
+        const premiumApp = document.getElementById('premium-app');
+
+        // دالة التهيئة الرئيسية (Initialization)
+        function initSystem() {
+            if (is_premium) {
+                // تفعيل النسخة الاحترافية
+                standardApp.classList.add('hidden');
+                premiumApp.classList.remove('hidden');
+                
+                // تشغيل وظائف الاحترافية الأولية
+                document.body.style.backgroundColor = 'var(--dark-bg)';
+                document.getElementById('welcome-msg').innerText = "أهلاً بك.. أنا مساعدك الذكي، كيف يمكنني خدمتك؟";
+                
+                console.log("تم تشغيل نظام Elite بنجاح.");
+            } else {
+                // تفعيل النسخة العادية
+                premiumApp.classList.add('hidden');
+                standardApp.classList.remove('hidden');
+                
+                // تشغيل وظائف العادية
+                document.body.style.backgroundColor = 'var(--light-bg)';
+                
+                console.log("تم تشغيل النظام العادي (Standard).");
+            }
+        }
+
+        // تشغيل المحرك عند تحميل الصفحة
+        window.addEventListener('DOMContentLoaded', initSystem);
+    </script>
+</body>
+</html>
