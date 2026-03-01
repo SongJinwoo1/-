@@ -4,296 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>حلول هادئة | Calm Solutions</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     
-    <style>
-        /* ==========================================
-           الأساسيات والمشتركات (Global)
-           ========================================== */
-        :root {
-            --primary-blue: #0056b3;
-            --light-bg: #f4f7f6;
-            --dark-bg: #0f172a;
-            --text-main: #333;
-            --white: #fff;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Tajawal', sans-serif; transition: background-color 0.4s ease; overflow-x: hidden; }
-        .hidden { display: none !important; }
-
-        /* ==========================================
-           النسخة العادية (Standard Edition)
-           ========================================== */
-        #standard-app {
-            background-color: var(--light-bg);
-            color: var(--text-main);
-            min-height: 100vh;
-        }
-        .std-header {
-            background-color: var(--primary-blue);
-            color: var(--white);
-            text-align: center;
-            padding: 2rem 1rem;
-        }
-        .std-form-container {
-            max-width: 600px;
-            margin: -2rem auto 2rem auto;
-            background: var(--white);
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            position: relative;
-        }
-        .std-input {
-            width: 100%; padding: 10px; margin-bottom: 15px;
-            border: 1px solid #ccc; border-radius: 5px; font-family: inherit;
-        }
-        .std-btn {
-            width: 100%; padding: 12px; background: var(--primary-blue);
-            color: var(--white); border: none; border-radius: 5px;
-            font-size: 1.1rem; cursor: pointer;
-        }
-
-        /* ==========================================
-           النسخة الاحترافية (Premium Edition)
-           ========================================== */
-        #premium-app {
-            background-color: var(--dark-bg);
-            color: var(--white);
-            min-height: 100vh;
-            position: relative;
-        }
-        /* خلفية الفيديو */
-        .premium-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover; z-index: -1; opacity: 0.2;
-        }
-        .glass-panel {
-            max-width: 800px; margin: 5vh auto; padding: 2rem;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-        .glass-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;
-        }
-        #ai-bot-container {
-            background: rgba(0,0,0,0.2); border-radius: 10px;
-            min-height: 400px; padding: 1rem; display: flex; flex-direction: column;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div id="standard-app" class="hidden">
-        <header class="std-header">
-            <h1>حلول هادئة</h1>
-            <p>الرعاية الطبية الكلاسيكية</p>
-        </header>
-        <div class="std-form-container">
-            <h3>احجز موعدك الآن</h3><br>
-            <form id="std-form">
-                <input type="text" class="std-input" placeholder="الاسم الكريم" required>
-                <input type="tel" class="std-input" placeholder="رقم الهاتف" required>
-                <select class="std-input" required>
-                    <option value="">اختر التخصص...</option>
-                    <option value="أسنان">أسنان</option>
-                    <option value="جلدية">جلدية</option>
-                </select>
-                <button type="button" class="std-btn" onclick="alert('تم الحجز بالنسخة العادية!')">إرسال الطلب</button>
-            </form>
-        </div>
-    </div>
+    <main id="app-container">
 
-    <div id="premium-app" class="hidden">
-        <video class="premium-bg" autoplay loop muted playsinline>
-            <source src="https://cdn.pixabay.com/video/2020/05/25/40131-424811910_large.mp4" type="video/mp4">
-        </video>
-        
-        <div class="glass-panel">
-            <div class="glass-header">
-                <h2>✨ حلول هادئة Elite</h2>
-                <button style="padding: 5px 15px; border-radius: 20px; background: transparent; color: white; border: 1px solid white; cursor: pointer;">بوابة الإدارة 🔒</button>
+        <section id="standard-tier" class="view hidden">
+            <header class="std-nav">
+                <h1>حلول هادئة</h1>
+                <p>النسخة الكلاسيكية</p>
+            </header>
+            <div class="std-content">
+                <h3>حجز موعد جديد</h3>
+                <input type="text" id="std-name" placeholder="الاسم بالكامل">
+                <input type="tel" id="std-phone" placeholder="رقم الموبايل">
+                <button onclick="submitStandard()">تأكيد الحجز</button>
             </div>
+        </section>
+
+        <section id="premium-tier" class="view hidden">
+            <div class="video-overlay"></div>
             
-            <p id="welcome-msg" style="margin-bottom: 15px;">المساعد الذكي متصل الآن...</p>
-            
-            <div id="ai-bot-container">
-                <div id="chat-messages" style="flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding-right: 5px;"></div>
-                <div style="display: flex; gap: 10px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
-                    <input type="text" id="chat-input" placeholder="اكتب ردك هنا..." style="flex: 1; padding: 10px; border-radius: 5px; border: none; outline: none; background: rgba(255,255,255,0.9); font-family: inherit;">
-                    <button onclick="handleUserInput()" style="padding: 10px 20px; background: var(--primary-blue); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">إرسال</button>
+            <div class="glass-ui">
+                <header class="premium-nav">
+                    <h2>✨ حلول هادئة Elite</h2>
+                    <button id="admin-trigger">لوحة الإدارة 🔒</button>
+                </header>
+
+                <div id="ai-chat-box">
+                    <div id="display-messages"></div>
+                    <div class="chat-controls">
+                        <input type="text" id="ai-input" placeholder="تحدث مع المساعد الذكي...">
+                        <button id="send-btn">إرسال</button>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <script>
-        // المتغير المحوري: غيره لـ false لترى النسخة العادية
-        const is_premium = true; 
+        <section id="admin-panel" class="view hidden">
+            <div class="admin-grid">
+                <nav class="side-menu">
+                    <h3>الإدارة</h3>
+                    <ul>
+                        <li>قائمة المواعيد</li>
+                        <li>الإحصائيات</li>
+                        <li class="premium-feature">تصدير Excel 📊</li>
+                    </ul>
+                </nav>
+                <div class="main-display">
+                    <h2>الحجوزات الحالية</h2>
+                    <table id="data-table">
+                        </table>
+                </div>
+            </div>
+        </section>
 
-        const standardApp = document.getElementById('standard-app');
-        const premiumApp = document.getElementById('premium-app');
+    </main>
 
-        // ==========================================
-        // 1. منطق التبديل (Dynamic Switch)
-        // ==========================================
-        function initSystem() {
-            if (is_premium) {
-                standardApp.classList.add('hidden');
-                premiumApp.classList.remove('hidden');
-                document.body.style.backgroundColor = 'var(--dark-bg)';
-                
-                // تشغيل عقل الذكاء الاصطناعي
-                startAIBot();
-            } else {
-                premiumApp.classList.add('hidden');
-                standardApp.classList.remove('hidden');
-                document.body.style.backgroundColor = 'var(--light-bg)';
-            }
-        }
-
-        // ==========================================
-        // 2. عقل الذكاء الاصطناعي (AI Chatbot Logic)
-        // ==========================================
-        const chatMessages = document.getElementById('chat-messages');
-        const chatInput = document.getElementById('chat-input');
-        
-        let chatStep = 0; 
-        let patientData = { name: '', phone: '', specialty: '', symptoms: '', priority: 'عادي' };
-
-        // دالة لإضافة رسالة في الشات
-        function appendMessage(sender, text, isError = false) {
-            const msgDiv = document.createElement('div');
-            msgDiv.style.padding = '10px 15px';
-            msgDiv.style.borderRadius = '15px';
-            msgDiv.style.maxWidth = '80%';
-            msgDiv.style.marginBottom = '5px';
-            msgDiv.style.lineHeight = '1.5';
-            msgDiv.style.animation = 'fadeIn 0.3s ease';
-
-            if (sender === 'bot') {
-                msgDiv.style.background = isError ? 'rgba(220, 53, 69, 0.8)' : 'rgba(0, 86, 179, 0.8)';
-                msgDiv.style.alignSelf = 'flex-start';
-                msgDiv.style.borderBottomRightRadius = '0';
-                msgDiv.innerHTML = `🤖 <b>المساعد:</b> ${text}`;
-            } else {
-                msgDiv.style.background = 'rgba(255, 255, 255, 0.2)';
-                msgDiv.style.alignSelf = 'flex-end';
-                msgDiv.style.borderBottomLeftRadius = '0';
-                msgDiv.innerHTML = `🧑 <b>أنت:</b> ${text}`;
-            }
-            chatMessages.appendChild(msgDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight; 
-        }
-
-        // محاكاة تأخير الكتابة للذكاء الاصطناعي
-        function botTyping(text, delay = 1000, isError = false) {
-            chatInput.disabled = true; 
-            setTimeout(() => {
-                appendMessage('bot', text, isError);
-                chatInput.disabled = false;
-                chatInput.focus();
-            }, delay);
-        }
-
-        // بدء المحادثة
-        function startAIBot() {
-            const savedData = localStorage.getItem('calm_patient');
-            if (savedData) {
-                const oldPatient = JSON.parse(savedData);
-                botTyping(`أهلاً بعودتك يا ${oldPatient.name}! هل تود حجز موعد جديد في قسم (${oldPatient.specialty})؟ (نعم / لا)`);
-                chatStep = 99; 
-            } else {
-                botTyping('مرحباً بك في حلول هادئة Elite ✨. أنا مساعدك الرقمي. لكي أقوم بحجز موعدك، ما هو اسمك الكريم؟');
-                chatStep = 1;
-            }
-        }
-
-        // معالجة ردود المستخدم بناءً على الحالة
-        function handleUserInput() {
-            const text = chatInput.value.trim();
-            if (!text) return;
-
-            appendMessage('user', text);
-            chatInput.value = '';
-
-            switch (chatStep) {
-                case 1: 
-                    if (text.length < 3) {
-                        botTyping('عذراً، يرجى إدخال اسم صحيح لا يقل عن 3 أحرف.', 500, true);
-                    } else {
-                        patientData.name = text;
-                        botTyping(`تشرفنا بك يا ${text}. ما هو رقم هاتفك للتواصل؟ (يجب أن يكون 8 أرقام على الأقل)`);
-                        chatStep = 2;
-                    }
-                    break;
-                
-                case 2: 
-                    if (text.length < 8 || isNaN(text)) {
-                        botTyping('عذراً، رقم الهاتف غير صالح. يرجى إدخال أرقام فقط.', 500, true);
-                    } else {
-                        patientData.phone = text;
-                        botTyping('ممتاز. ما هو التخصص الذي ترغب بزيارته؟ (مثال: أسنان، جلدية، باطنية)');
-                        chatStep = 3;
-                    }
-                    break;
-
-                case 3: 
-                    patientData.specialty = text;
-                    botTyping('مفهوم. يرجى وصف حالتك أو الأعراض التي تشعر بها باختصار لمساعدة الطبيب.');
-                    chatStep = 4;
-                    break;
-
-                case 4: 
-                    patientData.symptoms = text;
-                    const urgentKeywords = ['دم', 'نزيف', 'ألم شديد', 'طوارئ', 'كسر', 'حادث'];
-                    const isUrgent = urgentKeywords.some(keyword => text.includes(keyword));
-                    
-                    if (isUrgent) {
-                        patientData.priority = 'طوارئ 🔴';
-                        botTyping('لقد لاحظت من وصفك أن الحالة قد تتطلب تدخلاً سريعاً! تم تصنيف حجزك كـ "طوارئ" وسأقوم بتنبيه الطبيب فوراً.', 1000);
-                    } else {
-                        botTyping('تم تسجيل الأعراض. جاري معالجة البيانات...', 1000);
-                    }
-
-                    setTimeout(() => {
-                        botTyping(`🎉 تم تأكيد حجزك بنجاح! <br>الاسم: ${patientData.name} <br>التخصص: ${patientData.specialty} <br>الأولوية: ${patientData.priority}`);
-                        localStorage.setItem('calm_patient', JSON.stringify(patientData));
-                        chatStep = 5; 
-                    }, 2500);
-                    break;
-
-                case 99: 
-                    if (text === 'نعم') {
-                        const oldPatient = JSON.parse(localStorage.getItem('calm_patient'));
-                        botTyping(`رائع! تم تجديد حجزك أوتوماتيكياً في قسم ${oldPatient.specialty}. سيصلك تذكير قريباً.`);
-                        chatStep = 5;
-                    } else {
-                        botTyping('حسناً، لنبدأ من جديد. ما هو التخصص الذي تحتاجه هذه المرة؟');
-                        chatStep = 3; 
-                    }
-                    break;
-
-                default:
-                    botTyping('تم إنجاز الحجز. إذا كان لديك استفسار آخر، يرجى التواصل مع الإدارة.');
-            }
-        }
-
-        // الاستماع لزر Enter في لوحة المفاتيح
-        chatInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') handleUserInput();
-        });
-
-        // تشغيل المحرك عند تحميل الصفحة
-        window.addEventListener('DOMContentLoaded', initSystem);
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
