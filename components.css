@@ -1,1 +1,50 @@
-hh
+/* تنسيق الشعار SVG والاسم */
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.app-logo {
+    transition: transform 0.5s ease;
+}
+
+/* حركة خفيفة للشعار لما تلمسه بالماوس */
+.logo-wrapper:hover .app-logo {
+    transform: rotate(15deg) scale(1.1);
+}
+
+/* تنسيق الأزرار الاحترافي */
+button {
+    cursor: pointer;
+    border: none;
+    outline: none;
+    border-radius: 12px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+#theme-toggler {
+    background: transparent;
+    font-size: 1.5rem;
+    padding: 8px;
+}
+
+#theme-toggler:hover {
+    transform: scale(1.2);
+}
+
+/* زر لوحة الإدارة (المخفي للأطباء فقط) */
+#admin-login-btn {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+}
