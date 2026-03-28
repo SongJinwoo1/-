@@ -3,195 +3,766 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JUTHOUR | نظام مبيعات جذور</title>
-    
+    <title>Arise ERP | Cybernetic Business Intelligence</title>
+    <!-- Firebase + Libraries -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
     <style>
+        /* ---------- Global Cyberpunk Theme ---------- */
         :root {
-            --gold: #d4af37;
-            --dark-bg: #0a0e14;
-            --card-bg: #161b22;
-            --text-gray: #8b949e;
+            --bg-dark: #050b14;
+            --card-bg: rgba(12, 20, 30, 0.75);
+            --neon-blue: #0af;
+            --neon-green: #0f6;
+            --neon-pink: #f0f;
+            --glass-border: rgba(0, 170, 255, 0.3);
+            --text: #eef;
         }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-color: var(--dark-bg);
-            color: white;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .app-container {
-            width: 100%;
-            max-width: 450px;
-            padding: 20px;
-            background: linear-gradient(180deg, #161b22 0%, #0a0e14 100%);
-        }
-
-        .header {
-            text-align: center;
-            padding: 40px 0 20px;
-        }
-
-        .header h1 {
-            font-size: 2.2rem;
-            color: var(--gold);
-            margin: 0;
-            letter-spacing: 2px;
-            text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
-        }
-
-        .header p {
-            color: var(--text-gray);
-            font-size: 0.9rem;
-            margin-top: 5px;
-        }
-
-        .status-pill {
-            background: rgba(52, 211, 153, 0.1);
-            color: #34d399;
-            padding: 6px 15px;
-            border-radius: 50px;
-            font-size: 0.7rem;
-            display: inline-block;
-            margin-bottom: 30px;
-            border: 1px solid rgba(52, 211, 153, 0.2);
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid #30363d;
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            transition: 0.3s;
-            cursor: pointer;
+            background: var(--bg-dark);
+            color: var(--text);
+            font-family: 'Segoe UI', 'Cairo', monospace;
+            overflow-x: hidden;
             position: relative;
         }
-
-        .card:hover {
-            border-color: var(--gold);
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
-        }
-
-        .card h3 { margin: 10px 0 5px; font-size: 1.1rem; }
-        .card span { color: var(--gold); font-weight: bold; font-size: 0.9rem; }
-
-        .btn-custom {
+        /* Matrix Background */
+        #matrixCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            margin-top: 25px;
-            padding: 15px;
-            background: transparent;
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            border-radius: 12px;
+            height: 100%;
+            z-index: -2;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .neon-text {
+            text-shadow: 0 0 5px var(--neon-blue), 0 0 10px var(--neon-blue);
+        }
+        button {
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-pink));
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            color: #000;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
+            transition: 0.2s;
         }
-
-        .btn-custom:hover {
-            background: var(--gold);
-            color: black;
+        button:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--neon-blue); }
+        input, select, textarea {
+            background: #0a0f1a;
+            border: 1px solid #2a3a55;
+            border-radius: 20px;
+            padding: 10px 16px;
+            color: white;
+            width: 100%;
+            margin-bottom: 12px;
         }
-
-        #log {
-            margin-top: 30px;
-            font-size: 0.8rem;
-            color: var(--text-gray);
-            border-top: 1px solid #30363d;
-            padding-top: 15px;
+        .admin-only { display: none; }
+        .section { display: none; animation: fade 0.4s ease; }
+        .section.active { display: block; }
+        @keyframes fade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; } }
+        /* Grids */
+        .products-grid, .bundles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .product-card, .bundle-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(4px);
+            border-radius: 24px;
+            padding: 16px;
             text-align: center;
+            transition: 0.2s;
+            cursor: pointer;
+            border: 1px solid var(--glass-border);
         }
-
-        .success-anim { color: #34d399; }
+        .product-card:hover, .bundle-card:hover { border-color: var(--neon-blue); transform: translateY(-5px); }
+        .price { color: var(--neon-green); font-size: 1.4rem; font-weight: bold; }
+        .low-stock { border-color: #ffaa33; background: rgba(255,170,51,0.1); }
+        /* Admin Tabs */
+        .admin-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        .admin-tab {
+            background: #1a1f2e;
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .admin-tab.active { background: var(--neon-pink); color: black; }
+        /* Floating Cart */
+        .floating-cart {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 50px;
+            padding: 12px 24px;
+            z-index: 100;
+            border: 1px solid var(--neon-blue);
+            cursor: pointer;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #0f1722;
+            border-radius: 32px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid var(--neon-blue);
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--neon-green);
+            color: black;
+            padding: 12px 24px;
+            border-radius: 40px;
+            z-index: 2000;
+            animation: slideIn 0.3s;
+        }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
     </style>
 </head>
 <body>
+<canvas id="matrixCanvas"></canvas>
 
-<div class="app-container">
-    <div class="header">
-        <h1>JUTHOUR</h1>
-        <p>Arise Cloud POS System</p>
-        <div class="status-pill" id="cloud-status">● متصل بسحابة Arise</div>
-    </div>
+<div class="floating-cart" onclick="toggleCartModal()">🛒 <span id="cartCount">0</span></div>
 
-    <div class="grid">
-        <div class="card" onclick="saveSale('عطر فاخر', 25)">
-            <h3>عطر فاخر</h3>
-            <span>25 د.ك</span>
+<div class="app-container" style="max-width:1400px; margin:0 auto; padding:20px;">
+    <!-- Header -->
+    <div class="glass-card" style="padding:20px; margin-bottom:30px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+        <div>
+            <h1 class="neon-text">⚡ ARISE ERP ⚡</h1>
+            <small style="color:var(--neon-pink);">"المنطق هو الحقيقة الوحيدة" – Ayanokoji & Sung Jin Woo</small>
         </div>
-        <div class="card" onclick="saveSale('بخور ملكي', 18)">
-            <h3>بخور ملكي</h3>
-            <span>18 د.ك</span>
-        </div>
-        <div class="card" onclick="saveSale('باقة هدايا', 40)">
-            <h3>باقة هدايا</h3>
-            <span>40 د.ك</span>
-        </div>
-        <div class="card" onclick="saveSale('تنسيق ورد', 12)">
-            <h3>تنسيق ورد</h3>
-            <span>12 د.ك</span>
+        <div style="display:flex; gap:15px;">
+            <input type="text" id="searchInput" placeholder="🔍 ابحث عن منتج..." style="width:200px;">
+            <button id="toggleAdminBtn">🔐 دخول المدير</button>
         </div>
     </div>
 
-    <button class="btn-custom" onclick="customSale()">+ فاتورة مخصصة</button>
+    <!-- Storefront Section -->
+    <div id="storefrontSection" class="section active">
+        <div class="glass-card" style="padding:20px; margin-bottom:20px;">
+            <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                <button class="category-btn active" data-cat="all">الكل</button>
+                <button class="category-btn" data-cat="بخور">بخور</button>
+                <button class="category-btn" data-cat="عطور">عطور</button>
+                <button class="category-btn" data-cat="هدايا">هدايا</button>
+                <button class="category-btn" data-cat="إكسسوارات">إكسسوارات</button>
+                <button class="category-btn" data-cat="عروض">عروض</button>
+            </div>
+        </div>
+        <div id="flashSaleTimer" class="glass-card" style="padding:15px; text-align:center; margin-bottom:20px;"></div>
+        <h2>🔥 أوت فيت الأسبوع</h2>
+        <div id="outfitOfWeek" class="glass-card" style="padding:20px; margin-bottom:30px;"></div>
+        <h2>📦 المنتجات المتوفرة</h2>
+        <div id="productsGrid" class="products-grid"></div>
+        <h2>🎁 باقات مميزة</h2>
+        <div id="bundlesGrid" class="bundles-grid"></div>
+        <h2>⭐ تقييمات العملاء</h2>
+        <div id="reviewsSection" class="glass-card" style="padding:20px;"></div>
+    </div>
 
-    <div id="log">جاهز لتسجيل المبيعات...</div>
+    <!-- Admin Panel (hidden until login) -->
+    <div id="adminSection" class="section">
+        <div class="admin-tabs">
+            <div class="admin-tab active" data-tab="products">📦 المنتجات</div>
+            <div class="admin-tab" data-tab="bundles">🎁 الباقات</div>
+            <div class="admin-tab" data-tab="expenses">💸 المصاريف</div>
+            <div class="admin-tab" data-tab="finance">💰 الذكاء المالي</div>
+            <div class="admin-tab" data-tab="orders">📋 الطلبات</div>
+            <div class="admin-tab" data-tab="reviews">⭐ التقييمات</div>
+            <div class="admin-tab" data-tab="promo">🏷️ كوبونات</div>
+            <div class="admin-tab" data-tab="engine">⚙️ Arise Engine</div>
+        </div>
+
+        <!-- Products Management -->
+        <div id="adminProducts" class="admin-pane active">
+            <h3>إضافة منتج جديد</h3>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <input type="text" id="prodName" placeholder="الاسم">
+                <select id="prodCategory"><option>بخور</option><option>عطور</option><option>هدايا</option><option>إكسسوارات</option><option>عروض</option></select>
+                <input type="number" id="prodSell" placeholder="سعر البيع (د.ك)">
+                <input type="number" id="prodCost" placeholder="سعر التكلفة (د.ك)">
+                <input type="number" id="prodQty" placeholder="الكمية">
+                <input type="text" id="prodSupplier" placeholder="المورد">
+                <input type="file" id="prodImage" accept="image/*">
+                <button id="addProductBtn">➕ إضافة</button>
+            </div>
+            <hr>
+            <h3>جميع المنتجات</h3>
+            <div id="adminProductsList"></div>
+        </div>
+
+        <!-- Bundles Management -->
+        <div id="adminBundles" class="admin-pane">
+            <h3>إنشاء باقة (Outfit)</h3>
+            <input type="text" id="bundleName" placeholder="اسم الباقة">
+            <input type="number" id="bundlePrice" placeholder="سعر الباقة بعد الخصم">
+            <select id="bundleProducts" multiple size="5"></select>
+            <button id="createBundleBtn">إنشاء الباقة</button>
+            <hr>
+            <div id="adminBundlesList"></div>
+        </div>
+
+        <!-- Expenses -->
+        <div id="adminExpenses" class="admin-pane">
+            <h3>تسجيل مصروف</h3>
+            <input type="text" id="expTitle" placeholder="العنوان">
+            <input type="number" id="expAmount" placeholder="القيمة (د.ك)">
+            <input type="file" id="expReceipt" accept="image/*">
+            <button id="addExpenseBtn">أرشفة المصروف</button>
+            <hr>
+            <div id="expensesList"></div>
+        </div>
+
+        <!-- Finance Dashboard -->
+        <div id="adminFinance" class="admin-pane">
+            <div class="glass-card" style="padding:20px; margin-bottom:20px; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px;" id="financeCards"></div>
+            <canvas id="profitChart" width="400" height="200"></canvas>
+            <button id="exportExcelBtn">📊 تصدير تقرير Excel</button>
+        </div>
+
+        <!-- Orders -->
+        <div id="adminOrders" class="admin-pane">
+            <div id="ordersList"></div>
+        </div>
+
+        <!-- Reviews -->
+        <div id="adminReviews" class="admin-pane">
+            <div id="adminReviewsList"></div>
+        </div>
+
+        <!-- Promo Codes -->
+        <div id="adminPromo" class="admin-pane">
+            <h3>إضافة كوبون خصم</h3>
+            <input type="text" id="promoCode" placeholder="الكود">
+            <input type="number" id="promoDiscount" placeholder="الخصم (نسبة أو مبلغ)">
+            <select id="promoType"><option>percentage</option><option>fixed</option></select>
+            <button id="addPromoBtn">إضافة</button>
+            <div id="promoList"></div>
+        </div>
+
+        <!-- Arise Engine (Python + CodeMirror) -->
+        <div id="adminEngine" class="admin-pane">
+            <h3>Arise Engine – تنفيذ أكواد Python</h3>
+            <textarea id="pythonCode" rows="8" style="width:100%; background:#000; color:#0f0; font-family:monospace;"># جرب حساب ربحية منتج
+product_price = 10
+cost = 5
+print(f"الربح: {product_price - cost}")</textarea>
+            <button id="runPythonBtn">▶️ تشغيل</button>
+            <pre id="pythonOutput" style="background:#000; padding:10px; border-radius:12px; margin-top:15px;"></pre>
+        </div>
+    </div>
+</div>
+
+<!-- Cart Modal -->
+<div id="cartModal" class="modal">
+    <div class="modal-content">
+        <h3>🛒 سلة المشتريات</h3>
+        <div id="cartItemsList"></div>
+        <div>الإجمالي: <span id="cartTotal">0</span> د.ك</div>
+        <div style="margin:15px 0;">
+            <input type="text" id="promoInput" placeholder="كود الخصم">
+            <button id="applyPromoBtn">تطبيق</button>
+        </div>
+        <div>طريقة الدفع: 
+            <select id="paymentMethod"><option>كاش</option><option>تحويل بنكي</option></select>
+        </div>
+        <button id="checkoutBtnFinal">💳 إتمام الطلب</button>
+        <button onclick="closeModal('cartModal')">إغلاق</button>
+    </div>
 </div>
 
 <script>
-    // إعدادات Firebase الخاصة بك (من الصورة)
+    // Firebase Config
     const firebaseConfig = {
-      apiKey: "AIzaSyDnClogldgBbDrQm2ZZTRYUaTUms-isQOA",
-      authDomain: "arise-juthour-pos-1e370.firebaseapp.com",
-      projectId: "arise-juthour-pos-1e370",
-      storageBucket: "arise-juthour-pos-1e370.firebasestorage.app",
-      messagingSenderId: "687997898590",
-      appId: "1:687997898590:web:b54e420ea9917ccbb189cf",
-      measurementId: "G-0QCP4GY65G"
+        apiKey: "AIzaSyDnClogldgBbDrQm2ZZTRYUaTUms-isQOA",
+        authDomain: "arise-juthour-pos-1e370.firebaseapp.com",
+        projectId: "arise-juthour-pos-1e370",
+        storageBucket: "arise-juthour-pos-1e370.appspot.com"
     };
-
-    // تشغيل النظام
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const storage = firebase.storage();
+    db.enablePersistence().catch(e => console.warn("offline mode", e));
 
-    async function saveSale(item, price) {
-        const log = document.getElementById('log');
-        log.innerHTML = "جاري الحفظ في السحابة...";
-        
-        try {
-            await db.collection("sales").add({
-                item: item,
-                price: price,
-                currency: "KWD",
-                time: firebase.firestore.FieldValue.serverTimestamp()
+    // Global State
+    let cart = JSON.parse(localStorage.getItem('arise_cart') || '[]');
+    let wishlist = JSON.parse(localStorage.getItem('arise_wishlist') || '[]');
+    let isAdmin = false;
+    let currentChart = null;
+    let currentCurrency = 'KWD'; // دينار كويتي
+    let exchangeRates = { KWD: 1, SAR: 12.2, EGP: 75.5 };
+    let promoCodeApplied = null;
+
+    // Helper Functions
+    function showToast(msg) {
+        let toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function updateCartUI() {
+        let count = cart.reduce((s, i) => s + i.qty, 0);
+        document.getElementById('cartCount').innerText = count;
+        localStorage.setItem('arise_cart', JSON.stringify(cart));
+        if (document.getElementById('cartItemsList')) {
+            let container = document.getElementById('cartItemsList');
+            let total = 0;
+            container.innerHTML = '';
+            cart.forEach((item, idx) => {
+                total += item.price * item.qty;
+                container.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    ${item.name} x${item.qty} = ${(item.price * item.qty).toFixed(2)} د.ك
+                    <button onclick="removeFromCart(${idx})">✖</button>
+                </div>`;
             });
-            log.innerHTML = `<span class="success-anim">✅ تم تسجيل بيع (${item}) بقيمة ${price} د.ك</span>`;
-        } catch (e) {
-            log.innerHTML = "❌ خطأ: تأكد من إعدادات الـ Rules في Firebase";
-            console.error(e);
+            document.getElementById('cartTotal').innerText = total.toFixed(2);
         }
     }
+    window.removeFromCart = (idx) => { cart.splice(idx,1); updateCartUI(); };
 
-    function customSale() {
-        let n = prompt("اسم المنتج:");
-        let p = prompt("السعر بالدينار:");
-        if(n && p) saveSale(n, parseFloat(p));
+    function addToCart(product, qty=1) {
+        let existing = cart.find(p => p.id === product.id);
+        if (existing) existing.qty += qty;
+        else cart.push({...product, qty});
+        updateCartUI();
+        showToast(`✅ تم إضافة ${product.name} للسلة`);
     }
-</script>
 
+    // Matrix Background
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    let matrix = "01ARISE01";
+    let drops = [];
+    function drawMatrix() {
+        ctx.fillStyle = 'rgba(0,0,0,0.05)';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = '#0f0';
+        ctx.font = '15px monospace';
+        for(let i=0; i<drops.length; i++) {
+            let text = matrix[Math.floor(Math.random()*matrix.length)];
+            ctx.fillText(text, i*20, drops[i]*20);
+            if(drops[i]*20 > canvas.height && Math.random() > 0.975) drops[i]=0;
+            drops[i]++;
+        }
+    }
+    for(let i=0; i<canvas.width/20; i++) drops.push(0);
+    setInterval(drawMatrix, 50);
+
+    // Load Products from Firestore
+    function loadProducts(category='all') {
+        let ref = db.collection('Products');
+        if(category !== 'all') ref = ref.where('category', '==', category);
+        ref.onSnapshot(snapshot => {
+            let html = '';
+            snapshot.forEach(doc => {
+                let p = doc.data();
+                if(p.quantity <= 0) return; // مخفي
+                html += `
+                    <div class="product-card ${p.quantity <= 5 ? 'low-stock' : ''}">
+                        <img src="${p.imageUrl || 'https://via.placeholder.com/150'}" style="width:100%; border-radius:16px; height:150px; object-fit:cover;">
+                        <h3>${escapeHtml(p.name)}</h3>
+                        <div class="price">${(p.sellingPrice * exchangeRates[currentCurrency]).toFixed(2)} ${currentCurrency}</div>
+                        <div>المتبقي: ${p.quantity}</div>
+                        <button onclick="addToCart({id:'${doc.id}', name:'${p.name}', price:${p.sellingPrice}, cost:${p.costPrice}})">➕ أضف للسلة</button>
+                        <button onclick="showQR('${doc.id}')">📱 QR</button>
+                    </div>
+                `;
+            });
+            document.getElementById('productsGrid').innerHTML = html;
+        });
+    }
+
+    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+
+    // Bundles
+    function loadBundles() {
+        db.collection('Bundles').onSnapshot(snapshot => {
+            let html = '';
+            snapshot.forEach(doc => {
+                let b = doc.data();
+                html += `<div class="bundle-card">
+                    <h3>${b.name}</h3>
+                    <div class="price">${(b.price * exchangeRates[currentCurrency]).toFixed(2)} ${currentCurrency}</div>
+                    <button onclick="addBundleToCart('${doc.id}', '${b.name}', ${b.price})">🎁 شراء الباقة</button>
+                </div>`;
+            });
+            document.getElementById('bundlesGrid').innerHTML = html;
+        });
+    }
+
+    window.addBundleToCart = (id, name, price) => {
+        addToCart({id, name, price, cost:0, isBundle:true}, 1);
+    };
+
+    // Outfit of the Week
+    function loadOutfit() {
+        db.collection('Bundles').limit(1).get().then(snap => {
+            if(!snap.empty) {
+                let outfit = snap.docs[0].data();
+                document.getElementById('outfitOfWeek').innerHTML = `<div class="glass-card" style="padding:20px;"><h3>✨ ${outfit.name} ✨</h3><div class="price">${outfit.price} د.ك</div><button onclick="addBundleToCart('${snap.docs[0].id}','${outfit.name}',${outfit.price})">اشتري الآن</button></div>`;
+            }
+        });
+    }
+
+    // Flash Sale Timer
+    function startFlashSale() {
+        let end = new Date().getTime() + 2*60*60*1000; // 2 hours
+        setInterval(() => {
+            let now = new Date().getTime();
+            let diff = end - now;
+            if(diff <= 0) document.getElementById('flashSaleTimer').innerHTML = "انتهى العرض";
+            else {
+                let hours = Math.floor(diff/(1000*60*60));
+                let mins = Math.floor((diff%(1000*60*60))/(1000*60));
+                let secs = Math.floor((diff%(1000*60))/1000);
+                document.getElementById('flashSaleTimer').innerHTML = `⏳ عرض لمدة محدودة: ${hours}:${mins}:${secs}`;
+            }
+        }, 1000);
+    }
+
+    // Reviews
+    function loadReviews() {
+        db.collection('Reviews').orderBy('date','desc').onSnapshot(snap => {
+            let html = '';
+            snap.forEach(doc => {
+                let r = doc.data();
+                html += `<div class="glass-card" style="margin-bottom:15px; padding:15px;"><strong>${r.user}</strong> ★ ${r.rating}<br>${r.comment}<br><img src="${r.imageUrl}" style="max-width:100px;"></div>`;
+            });
+            document.getElementById('reviewsSection').innerHTML = html;
+        });
+    }
+
+    // Admin Functions (Products, Bundles, Expenses, Finance)
+    function initAdmin() {
+        // Add Product
+        document.getElementById('addProductBtn').onclick = async () => {
+            let name = document.getElementById('prodName').value;
+            let category = document.getElementById('prodCategory').value;
+            let sell = parseFloat(document.getElementById('prodSell').value);
+            let cost = parseFloat(document.getElementById('prodCost').value);
+            let qty = parseInt(document.getElementById('prodQty').value);
+            let supplier = document.getElementById('prodSupplier').value;
+            let file = document.getElementById('prodImage').files[0];
+            let imageUrl = '';
+            if(file) {
+                let ref = storage.ref(`products/${Date.now()}_${file.name}`);
+                await ref.put(file);
+                imageUrl = await ref.getDownloadURL();
+            }
+            await db.collection('Products').add({name, category, sellingPrice:sell, costPrice:cost, quantity:qty, supplier, imageUrl});
+            showToast('تمت إضافة المنتج');
+        };
+        // Load admin products list
+        db.collection('Products').onSnapshot(snap => {
+            let html = '';
+            snap.forEach(doc => {
+                let p = doc.data();
+                html += `<div style="background:#1e2a3a; margin-bottom:10px; padding:12px; border-radius:16px;">${p.name} - البيع: ${p.sellingPrice} - التكلفة: ${p.costPrice} - المتبقي: ${p.quantity} <button onclick="deleteProduct('${doc.id}')">حذف</button></div>`;
+            });
+            document.getElementById('adminProductsList').innerHTML = html;
+        });
+        // Bundles management
+        let productsSelect = document.getElementById('bundleProducts');
+        db.collection('Products').onSnapshot(snap => {
+            productsSelect.innerHTML = '';
+            snap.forEach(doc => {
+                let p = doc.data();
+                productsSelect.innerHTML += `<option value="${doc.id}">${p.name}</option>`;
+            });
+        });
+        document.getElementById('createBundleBtn').onclick = async () => {
+            let name = document.getElementById('bundleName').value;
+            let price = parseFloat(document.getElementById('bundlePrice').value);
+            let selected = Array.from(productsSelect.selectedOptions).map(opt => opt.value);
+            await db.collection('Bundles').add({name, price, products: selected});
+            showToast('تم إنشاء الباقة');
+        };
+        db.collection('Bundles').onSnapshot(snap => {
+            let html = '';
+            snap.forEach(doc => {
+                let b = doc.data();
+                html += `<div>${b.name} - ${b.price} د.ك <button onclick="deleteBundle('${doc.id}')">حذف</button></div>`;
+            });
+            document.getElementById('adminBundlesList').innerHTML = html;
+        });
+        // Expenses
+        document.getElementById('addExpenseBtn').onclick = async () => {
+            let title = document.getElementById('expTitle').value;
+            let amount = parseFloat(document.getElementById('expAmount').value);
+            let file = document.getElementById('expReceipt').files[0];
+            let imageUrl = '';
+            if(file) {
+                let ref = storage.ref(`expenses/${Date.now()}_${file.name}`);
+                await ref.put(file);
+                imageUrl = await ref.getDownloadURL();
+            }
+            await db.collection('Expenses').add({title, amount, imageUrl, date: new Date()});
+            showToast('تم تسجيل المصروف');
+        };
+        db.collection('Expenses').orderBy('date','desc').onSnapshot(snap => {
+            let html = '';
+            snap.forEach(doc => {
+                let e = doc.data();
+                html += `<div>${e.title} - ${e.amount} د.ك <a href="${e.imageUrl}" target="_blank">📄</a></div>`;
+            });
+            document.getElementById('expensesList').innerHTML = html;
+        });
+        // Finance Dashboard
+        async function updateFinance() {
+            let salesSnap = await db.collection('Sales').get();
+            let totalSales = 0, totalCost = 0;
+            salesSnap.forEach(doc => {
+                totalSales += doc.data().totalAmount;
+                totalCost += doc.data().totalCost;
+            });
+            let expSnap = await db.collection('Expenses').get();
+            let totalExp = 0;
+            expSnap.forEach(doc => totalExp += doc.data().amount);
+            let grossProfit = totalSales - totalCost;
+            let netProfit = grossProfit - totalExp;
+            let cards = document.getElementById('financeCards');
+            cards.innerHTML = `
+                <div><h4>المبيعات</h4><div>${totalSales.toFixed(2)} د.ك</div></div>
+                <div><h4>تكلفة البضاعة</h4><div>${totalCost.toFixed(2)} د.ك</div></div>
+                <div><h4>المصاريف</h4><div>${totalExp.toFixed(2)} د.ك</div></div>
+                <div><h4>الربح الإجمالي</h4><div class="price">${grossProfit.toFixed(2)} د.ك</div></div>
+                <div><h4>صافي الربح</h4><div class="${netProfit>=0?'price':'loss'}">${netProfit.toFixed(2)} د.ك</div></div>
+            `;
+            if(currentChart) currentChart.destroy();
+            let ctx = document.getElementById('profitChart').getContext('2d');
+            currentChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: ['المبيعات','تكلفة البضاعة','المصاريف','الربح الإجمالي','صافي الربح'],
+                        datasets: [{ label: 'القيمة', data: [totalSales, totalCost, totalExp, grossProfit, netProfit], backgroundColor: ['#0af','#f0f','#ffaa33','#0f6','#f0f'] }] }
+            });
+        }
+        updateFinance();
+        // Orders
+        db.collection('Sales').orderBy('date','desc').onSnapshot(snap => {
+            let html = '';
+            snap.forEach(doc => {
+                let o = doc.data();
+                html += `<div class="glass-card" style="margin-bottom:15px; padding:15px;">رقم الفاتورة: ${o.invoiceId} | الإجمالي: ${o.totalAmount} | الحالة: ${o.status} <button onclick="updateOrder('${doc.id}')">تغيير الحالة</button></div>`;
+            });
+            document.getElementById('ordersList').innerHTML = html;
+        });
+        window.updateOrder = async (id) => {
+            let doc = await db.collection('Sales').doc(id).get();
+            let newStatus = doc.data().status === 'pending' ? 'delivered' : 'pending';
+            await db.collection('Sales').doc(id).update({status: newStatus});
+        };
+        // Promo Codes
+        document.getElementById('addPromoBtn').onclick = async () => {
+            let code = document.getElementById('promoCode').value;
+            let discount = parseFloat(document.getElementById('promoDiscount').value);
+            let type = document.getElementById('promoType').value;
+            await db.collection('PromoCodes').add({code, discount, type});
+            showToast('تمت إضافة الكود');
+        };
+        db.collection('PromoCodes').onSnapshot(snap => {
+            let html = '';
+            snap.forEach(doc => {
+                let p = doc.data();
+                html += `<div>${p.code} - ${p.discount} (${p.type})</div>`;
+            });
+            document.getElementById('promoList').innerHTML = html;
+        });
+        // Reviews Admin
+        db.collection('Reviews').onSnapshot(snap => {
+            let html = '';
+            snap.forEach(doc => {
+                let r = doc.data();
+                html += `<div>${r.user}: ${r.comment} ★${r.rating} <button onclick="deleteReview('${doc.id}')">حذف</button></div>`;
+            });
+            document.getElementById('adminReviewsList').innerHTML = html;
+        });
+        // Export Excel
+        document.getElementById('exportExcelBtn').onclick = async () => {
+            let sales = await db.collection('Sales').get();
+            let data = sales.docs.map(d => d.data());
+            let ws = XLSX.utils.json_to_sheet(data);
+            let wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Sales');
+            XLSX.writeFile(wb, 'arise_sales.xlsx');
+        };
+        // Arise Engine (Pyodide)
+        let pyodideReady = false;
+        let pyodide;
+        async function loadPyodide() {
+            pyodide = await loadPyodide({ indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/" });
+            pyodideReady = true;
+        }
+        loadPyodide();
+        document.getElementById('runPythonBtn').onclick = async () => {
+            if(!pyodideReady) { showToast('جاري تحميل محرك Python...'); return; }
+            let code = document.getElementById('pythonCode').value;
+            try {
+                let output = await pyodide.runPythonAsync(code);
+                document.getElementById('pythonOutput').innerText = output;
+            } catch(e) { document.getElementById('pythonOutput').innerText = e; }
+        };
+    }
+
+    // Checkout with promo and stock deduction
+    async function checkout() {
+        if(cart.length === 0) return showToast('السلة فارغة');
+        let total = cart.reduce((s,i)=> s + i.price * i.qty, 0);
+        if(promoCodeApplied) {
+            let promo = promoCodeApplied;
+            if(promo.type === 'percentage') total *= (1 - promo.discount/100);
+            else total -= promo.discount;
+        }
+        let invoiceId = Date.now().toString();
+        let totalCost = cart.reduce((s,i)=> s + (i.cost || 0) * i.qty, 0);
+        await db.collection('Sales').add({
+            invoiceId, items: cart, totalAmount: total, totalCost, date: new Date(), status: 'pending'
+        });
+        // Deduct stock for each product
+        for(let item of cart) {
+            if(!item.isBundle) {
+                let prodRef = db.collection('Products').doc(item.id);
+                let prod = await prodRef.get();
+                let newQty = prod.data().quantity - item.qty;
+                await prodRef.update({quantity: newQty});
+            } else {
+                // bundle: need to deduct each product inside
+                let bundle = await db.collection('Bundles').doc(item.id).get();
+                let bundleData = bundle.data();
+                for(let pid of bundleData.products) {
+                    let prodRef = db.collection('Products').doc(pid);
+                    let prod = await prodRef.get();
+                    let newQty = prod.data().quantity - item.qty;
+                    await prodRef.update({quantity: newQty});
+                }
+            }
+        }
+        cart = [];
+        updateCartUI();
+        showToast('تم إتمام الطلب بنجاح!');
+        closeModal('cartModal');
+    }
+
+    // Admin Login
+    document.getElementById('toggleAdminBtn').onclick = () => {
+        if(isAdmin) {
+            isAdmin = false;
+            document.getElementById('storefrontSection').classList.add('active');
+            document.getElementById('adminSection').classList.remove('active');
+            document.getElementById('toggleAdminBtn').innerText = '🔐 دخول المدير';
+            showToast('تم تسجيل الخروج');
+        } else {
+            let pwd = prompt('كلمة مرور المدير:');
+            if(pwd === 'admin123') {
+                isAdmin = true;
+                document.getElementById('storefrontSection').classList.remove('active');
+                document.getElementById('adminSection').classList.add('active');
+                document.getElementById('toggleAdminBtn').innerText = '🚪 تسجيل الخروج';
+                initAdmin();
+            } else showToast('كلمة مرور خاطئة');
+        }
+    };
+
+    // Cart Modal
+    function toggleCartModal() {
+        updateCartUI();
+        document.getElementById('cartModal').style.display = 'flex';
+    }
+    window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+    document.getElementById('checkoutBtnFinal').onclick = checkout;
+    document.getElementById('applyPromoBtn').onclick = async () => {
+        let code = document.getElementById('promoInput').value;
+        let snap = await db.collection('PromoCodes').where('code','==',code).get();
+        if(snap.empty) showToast('كود غير صالح');
+        else {
+            promoCodeApplied = snap.docs[0].data();
+            showToast('تم تطبيق الخصم');
+        }
+    };
+
+    // Search
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        let val = e.target.value.toLowerCase();
+        document.querySelectorAll('.product-card').forEach(card => {
+            let name = card.querySelector('h3').innerText.toLowerCase();
+            card.style.display = name.includes(val) ? '' : 'none';
+        });
+    });
+
+    // Categories
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            loadProducts(btn.getAttribute('data-cat'));
+        });
+    });
+
+    // QR Code
+    window.showQR = (id) => {
+        let modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'flex';
+        let div = document.createElement('div');
+        div.className = 'modal-content';
+        div.innerHTML = `<div id="qrcode"></div><button onclick="this.parentElement.parentElement.remove()">إغلاق</button>`;
+        modal.appendChild(div);
+        document.body.appendChild(modal);
+        new QRCode(div.querySelector('#qrcode'), { text: `https://arise.tech/product/${id}`, width: 200, height: 200 });
+    };
+
+    // Initial Load
+    loadProducts();
+    loadBundles();
+    loadOutfit();
+    startFlashSale();
+    loadReviews();
+    updateCartUI();
+</script>
 </body>
 </html>
