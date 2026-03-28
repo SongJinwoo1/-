@@ -1,13 +1,188 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JUTHOUR | نظام مبيعات جذور</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <style>
+        :root {
+            --gold: #d4af37;
+            --dark-bg: #0a0e14;
+            --card-bg: #161b22;
+            --text-gray: #8b949e;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: white;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+            background: linear-gradient(180deg, #161b22 0%, #0a0e14 100%);
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 0 20px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            color: var(--gold);
+            margin: 0;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .header p {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .status-pill {
+            background: rgba(52, 211, 153, 0.1);
+            color: #34d399;
+            padding: 6px 15px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            display: inline-block;
+            margin-bottom: 30px;
+            border: 1px solid rgba(52, 211, 153, 0.2);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .card:hover {
+            border-color: var(--gold);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+
+        .card h3 { margin: 10px 0 5px; font-size: 1.1rem; }
+        .card span { color: var(--gold); font-weight: bold; font-size: 0.9rem; }
+
+        .btn-custom {
+            width: 100%;
+            margin-top: 25px;
+            padding: 15px;
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-custom:hover {
+            background: var(--gold);
+            color: black;
+        }
+
+        #log {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            border-top: 1px solid #30363d;
+            padding-top: 15px;
+            text-align: center;
+        }
+
+        .success-anim { color: #34d399; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h1>JUTHOUR</h1>
+        <p>Arise Cloud POS System</p>
+        <div class="status-pill" id="cloud-status">● متصل بسحابة Arise</div>
+    </div>
+
+    <div class="grid">
+        <div class="card" onclick="saveSale('عطر فاخر', 25)">
+            <h3>عطر فاخر</h3>
+            <span>25 د.ك</span>
+        </div>
+        <div class="card" onclick="saveSale('بخور ملكي', 18)">
+            <h3>بخور ملكي</h3>
+            <span>18 د.ك</span>
+        </div>
+        <div class="card" onclick="saveSale('باقة هدايا', 40)">
+            <h3>باقة هدايا</h3>
+            <span>40 د.ك</span>
+        </div>
+        <div class="card" onclick="saveSale('تنسيق ورد', 12)">
+            <h3>تنسيق ورد</h3>
+            <span>12 د.ك</span>
+        </div>
+    </div>
+
+    <button class="btn-custom" onclick="customSale()">+ فاتورة مخصصة</button>
+
+    <div id="log">جاهز لتسجيل المبيعات...</div>
+</div>
+
+<script>
+    // إعدادات Firebase الخاصة بك (من الصورة)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDnClogldgBbDrQm2ZZTRYUaTUms-isQOA",
+      authDomain: "arise-juthour-pos-1e370.firebaseapp.com",
+      projectId: "arise-juthour-pos-1e370",
+      storageBucket: "arise-juthour-pos-1e370.firebasestorage.app",
+      messagingSenderId: "687997898590",
+      appId: "1:687997898590:web:b54e420ea9917ccbb189cf",
+      measurementId: "G-0QCP4GY65G"
+    };
+
+    // تشغيل النظام
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function saveSale(item, price) {
+        const log = document.getElementById('log');
+        log.innerHTML = "جاري الحفظ في السحابة...";
         
         try {
             await db.collection("sales").add({
                 item: item,
                 price: price,
+                currency: "KWD",
                 time: firebase.firestore.FieldValue.serverTimestamp()
             });
             log.innerHTML = `<span class="success-anim">✅ تم تسجيل بيع (${item}) بقيمة ${price} د.ك</span>`;
         } catch (e) {
-            log.innerHTML = "❌ خطأ في الاتصال بالسيرفر";
+            log.innerHTML = "❌ خطأ: تأكد من إعدادات الـ Rules في Firebase";
+            console.error(e);
         }
     }
 
